@@ -1,0 +1,65 @@
+---
+title: "How to contribute to the NoLeaves BepInEx mod"
+description: "Learn how to fork, modify, and submit pull requests to the NoLeaves BepInEx mod, including project structure and where the object name list lives."
+---
+
+NoLeaves is a small, single-file BepInEx mod and contributions are straightforward. The entire mod logic lives in one C# file, which makes it easy to understand the codebase quickly, test your changes locally, and submit a focused pull request.
+
+## How to contribute
+
+1. **Fork** the repository at [github.com/ASTRA228b/NoLeaves.ASTRA-V2](https://github.com/ASTRA228b/NoLeaves.ASTRA-V2).
+2. Create a branch for your change.
+3. Make your edits, then build and test locally (see [Building from source](/building)).
+4. Open a pull request against the `main` branch of the upstream repository.
+
+<Tip>
+  Keep pull requests focused on a single change. If you are fixing a bug and adding a feature at the same time, consider splitting them into two separate PRs to make review easier.
+</Tip>
+
+## Project structure
+
+| File | Purpose |
+|---|---|
+| `plugin.cs` | The entire mod logic — this is the single source of truth for all runtime behavior |
+| `NoLeaves.ASTRA.csproj` | Build configuration, target framework (`net48`), output path, and all DLL references |
+| `NoLeaves.ASTRA.sln` | Visual Studio solution file; used to open the project in the IDE |
+| `Properties/AssemblyInfo.cs` | Minimal assembly metadata file; largely unused given the attributes in `plugin.cs` |
+
+## Plugin metadata
+
+The plugin is registered with BepInEx using the following values from the `[BepInPlugin]` attribute in `plugin.cs`:
+
+| Field | Value |
+|---|---|
+| GUID | `ASTRA.MODS.NoLeaves` |
+| Name | `No Leaves` |
+| Version | `5.0.6` |
+
+If you bump the version as part of a contribution, update the `[BepInPlugin]` attribute in `plugin.cs`.
+
+## Updating the object name list
+
+The list of GameObject names that NoLeaves disables is **not** stored in this repository. At startup the mod fetches the list over HTTP from a separate GitHub repository:
+
+```text
+https://raw.githubusercontent.com/ASTRA228b/No-Leaves.ASTRA-OBJNAME/main/OBJECTNSME.txt
+```
+
+<Note>
+  To add, remove, or rename objects in the disable list, you need to edit `OBJECTNSME.txt` in the [ASTRA228b/No-Leaves.ASTRA-OBJNAME](https://github.com/ASTRA228b/No-Leaves.ASTRA-OBJNAME) repository — not this one. Each line in that file is a single GameObject name. The mod re-reads the list every time it starts.
+</Note>
+
+## Before submitting a PR
+
+- Build the project locally and confirm it compiles without errors or warnings.
+- Launch Gorilla Tag and verify the mod loads correctly in the BepInEx log.
+- If your change affects which objects are disabled, test in-game to confirm the expected objects are hidden and no unintended objects are affected.
+
+<CardGroup cols={2}>
+  <Card title="Building from source" icon="hammer" href="/building">
+    Step-by-step instructions for compiling NoLeaves and deploying it to your local Gorilla Tag installation.
+  </Card>
+  <Card title="NoLeaves on GitHub" icon="github" href="https://github.com/ASTRA228b/NoLeaves.ASTRA-V2">
+    Browse the source code, open issues, and submit pull requests.
+  </Card>
+</CardGroup>

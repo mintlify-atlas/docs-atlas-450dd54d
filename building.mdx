@@ -1,0 +1,73 @@
+---
+title: "Build NoLeaves from source on Windows with .NET 4.8"
+description: "Compile the NoLeaves BepInEx mod yourself from the GitHub repository, with step-by-step instructions for Visual Studio 2022 and the .NET SDK CLI."
+---
+
+Building NoLeaves from source requires a working Gorilla Tag installation and BepInEx 5. The project is a single-assembly .NET 4.8 mod whose output path is configured to drop the compiled DLL directly into the game's plugin directory, so there is no manual copy step after a successful build.
+
+## Prerequisites
+
+- **Visual Studio 2022** (any edition) with the **.NET desktop development** workload, or the **.NET SDK** with the **.NET Framework 4.8 targeting pack** installed separately
+- **Gorilla Tag** installed via Steam at the default path (`C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\`) — the `.csproj` references game and BepInEx DLLs using absolute paths from that location
+- **BepInEx 5** installed inside the Gorilla Tag directory so that `BepInEx/core/BepInEx.dll` and `BepInEx/core/0Harmony.dll` exist
+
+<Warning>
+  The `HintPath` entries in `NoLeaves.ASTRA.csproj` are absolute Windows paths pointing to the default Steam install location. If you installed Gorilla Tag to a different drive or directory, or if you are on a non-default Steam library, you must open the `.csproj` and update every `HintPath` to match your actual installation path before building.
+</Warning>
+
+## Build steps
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/ASTRA228b/NoLeaves.ASTRA-V2.git
+    ```
+
+    This creates a `NoLeaves.ASTRA-V2` directory containing the solution, project file, and `plugin.cs`.
+  </Step>
+
+  <Step title="Open the solution">
+    Open `NoLeaves.ASTRA.sln` in Visual Studio 2022, or build directly from the command line using the .NET SDK (see the code block below).
+
+    If you are using Visual Studio, select **Build > Build Solution** (or press `Ctrl+Shift+B`).
+  </Step>
+
+  <Step title="Verify DLL references resolve">
+    The `.csproj` references the following DLLs by absolute path:
+
+    - `BepInEx/core/BepInEx.dll`
+    - `BepInEx/core/0Harmony.dll`
+    - `Gorilla Tag_Data/Managed/UnityEngine.dll`
+    - `Gorilla Tag_Data/Managed/UnityEngine.CoreModule.dll`
+
+    If Visual Studio shows unresolved reference warnings, confirm that Gorilla Tag is installed at `C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\` and that BepInEx 5 is present. Otherwise, update the `HintPath` values in the `.csproj` to match your install location.
+  </Step>
+
+  <Step title="Build the project">
+    ```bash
+    dotnet build NoLeaves.ASTRA.sln
+    ```
+
+    The compiled `NoLeaves.ASTRA.dll` is written directly to:
+
+    ```
+    C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\BepInEx\plugins\MO\
+    ```
+
+    Because `AppendTargetFrameworkToOutputPath` is set to `false` in the `.csproj`, the DLL lands in that folder without a `net48` subfolder.
+  </Step>
+
+  <Step title="Launch Gorilla Tag to test">
+    Start Gorilla Tag through Steam. BepInEx will load `NoLeaves.ASTRA.dll` automatically from the `plugins/MO/` directory. Check the BepInEx console or log file to confirm the plugin loaded without errors.
+  </Step>
+</Steps>
+
+## Building from the command line
+
+If you prefer not to open Visual Studio, the .NET SDK can build the project directly:
+
+```bash
+dotnet build NoLeaves.ASTRA.sln --configuration Release
+```
+
+The output path is defined in the `.csproj` and does not change based on the build configuration, so `Debug` and `Release` both write to the same `BepInEx/plugins/MO/` directory.

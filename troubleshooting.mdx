@@ -1,0 +1,74 @@
+---
+title: "Troubleshooting common NoLeaves issues"
+description: "Solutions for leaves still appearing, URL fetch failures, the mod not loading, and leaves returning after map changes — with log references for each."
+---
+
+Most NoLeaves issues fall into one of four categories: timing (the mod hasn't had enough time to run yet), network problems (the object list couldn't be fetched), installation problems (BepInEx or the DLL isn't set up correctly), or scene reload edge cases. Work through the relevant section below before assuming the mod is broken.
+
+<AccordionGroup>
+  <Accordion title="Leaves are still visible after loading in">
+    NoLeaves has a built-in startup delay before it does anything. `Start()` waits 2 seconds before fetching the object list, and `DisableObjects()` runs its first scan 5 seconds after that. In total, leaves may not be removed until **7–10 seconds after loading into the map**.
+
+    Before drawing any conclusions:
+
+    - Wait at least 10 seconds after the map finishes loading.
+    - Watch for leaves disappearing — if they vanish a few seconds in, the mod is working correctly.
+    - Open `BepInEx/LogOutput.log` and confirm the plugin loaded. You should see a line referencing `ASTRA.MODS.NoLeaves` near the top of the log.
+
+    <Tip>
+      If leaves disappear and then come back, see the "Leaves come back after a map change" section below.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Failed To Load URL error in logs">
+    If you see the following line in `BepInEx/LogOutput.log`:
+
+    ```text
+    [NoLeaves]: Failed To Load URL ->
+    ```
+
+    The mod could not reach the remote object list. After this error the mod exits the coroutine cleanly — no crash, but no leaves will be removed for that session.
+
+    **Common causes:**
+
+    - No internet connection at the time the game launched.
+    - GitHub's raw content servers were temporarily unreachable.
+    - A firewall or VPN is blocking outbound requests to `raw.githubusercontent.com`.
+
+    **Steps to fix:**
+
+    1. Verify your internet connection is active.
+    2. Open a browser and check that `https://raw.githubusercontent.com` loads.
+    3. If you use a VPN or firewall, temporarily disable it and relaunch the game.
+    4. Relaunch Gorilla Tag — the fetch is retried fresh each session.
+
+    <Warning>
+      The mod does not retry the URL fetch within the same session. If the fetch fails on startup, you must relaunch the game to try again.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="The mod doesn't load at all">
+    If you see no sign of NoLeaves in `BepInEx/LogOutput.log`, the issue is most likely with your BepInEx installation or the DLL placement.
+
+    Check the following:
+
+    1. **BepInEx is installed** — your Gorilla Tag directory should contain a `BepInEx/` folder with `core/` and `plugins/` subdirectories. If it doesn't, install BepInEx 5 first.
+    2. **The DLL is in the right place** — `NoLeaves.ASTRA.dll` must be placed directly inside `BepInEx/plugins/`. Subfolders inside `plugins/` are supported by BepInEx, but confirm the file is present.
+    3. **Check the log for errors** — open `BepInEx/LogOutput.log` and look for any error lines near where other plugins are loaded. An exception during loading will appear there.
+
+    <Note>
+      `BepInEx/LogOutput.log` is recreated fresh each time you launch the game. Always check the log from the session where the problem occurred.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Leaves come back after a map change">
+    NoLeaves runs `DisableObjects()` in an infinite 5-second polling loop, so any leaves that respawn after a map transition should be caught and removed on the next pass. If leaves are persistently reappearing and not being removed:
+
+    - The URL fetch likely failed silently at startup. Open `BepInEx/LogOutput.log` and search for `[NoLeaves]: Failed To Load URL`. If that line is present, the `ObjNames` list is empty and no objects will ever be disabled.
+    - If the log shows no fetch error, wait a full 5–10 seconds after the map loads — the polling interval means there is always a short window where leaves are visible before the next scan.
+
+    <Tip>
+      Relaunch the game to force a fresh URL fetch. If the network was temporarily unavailable during the previous session, a relaunch will resolve it.
+    </Tip>
+  </Accordion>
+</AccordionGroup>

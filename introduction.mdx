@@ -1,0 +1,40 @@
+---
+title: "NoLeaves — BepInEx Mod for Gorilla Tag"
+description: "NoLeaves is a BepInEx 5 plugin for Gorilla Tag that automatically disables leaf GameObjects every session, with no configuration required."
+---
+
+NoLeaves is a lightweight BepInEx plugin for Gorilla Tag that removes leaf GameObjects from the scene automatically. Once installed, it runs silently in the background every session — no UI, no commands, no configuration needed.
+
+## What problem it solves
+
+Gorilla Tag's forest maps contain numerous leaf GameObjects that can clutter the environment and affect visibility. NoLeaves targets these objects by name and disables them at runtime, keeping the environment clean without modifying any game files permanently.
+
+## How it works
+
+On startup, NoLeaves waits 2 seconds for the game world to fully load, then downloads a list of leaf-related GameObject names from a remote source maintained by the mod author. Once the list is loaded, it scans every active GameObject in the scene every 5 seconds and disables any whose name exactly matches an entry in the list. This polling approach ensures leaves are removed even after map transitions or respawns.
+
+## Key facts
+
+| Property | Value |
+|---|---|
+| Version | 5.0.6 |
+| Plugin GUID | `ASTRA.MODS.NoLeaves` |
+| Plugin name | `No Leaves` |
+| Target framework | .NET Framework 4.8 |
+| BepInEx version | 5 |
+| Game | Gorilla Tag |
+
+<Note>
+  NoLeaves requires an active internet connection each time the game starts. It fetches the object name list from a remote URL on startup. If the fetch fails — due to no network, a firewall, or the remote being unavailable — the mod logs an error and exits gracefully. The game continues normally, but leaves will not be removed for that session.
+</Note>
+
+## Explore the docs
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download the DLL and drop it into your BepInEx plugins folder.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    End-to-end walkthrough from zero to leaves-removed in one guide.
+  </Card>
+</CardGroup>

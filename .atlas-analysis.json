@@ -1,0 +1,40 @@
+{
+  "projectType": "general",
+  "projectName": "NoLeaves",
+  "projectDescription": "A BepInEx mod for Gorilla Tag that automatically disables leaf GameObjects at runtime to improve visual clarity or performance.",
+  "theme": "palm",
+  "primaryColor": "#4A7C59",
+  "lightColor": "#A8D5B5",
+  "darkColor": "#2C4F38",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": ["introduction", "installation", "quickstart"]
+      },
+      {
+        "group": "How It Works",
+        "pages": ["how-it-works", "object-list", "troubleshooting"]
+      },
+      {
+        "group": "Development",
+        "pages": ["building", "contributing"]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Automatically disables leaf GameObjects in Gorilla Tag on startup",
+    "Fetches target object names dynamically from a remote URL",
+    "Runs as a BepInEx plugin with no player configuration required",
+    "Polls and disables matching objects every 5 seconds for persistent effect",
+    "Lightweight single-file implementation targeting .NET Framework 4.8"
+  ],
+  "publicApiSurface": [
+    "BepInPlugin(\"ASTRA.MODS.NoLeaves\", \"No Leaves\", \"5.0.6\")",
+    "NoLeaves : BaseUnityPlugin",
+    "Start() — initiates delayed startup coroutine",
+    "StartDelayed() — waits 2 seconds before loading object names",
+    "LoadFromURL() — downloads object name list from remote source",
+    "DisableObjects() — polls every 5 seconds and disables matching GameObjects"
+  ]
+}

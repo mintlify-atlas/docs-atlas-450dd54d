@@ -1,0 +1,71 @@
+---
+title: "How NoLeaves removes leaf objects at runtime"
+description: "A technical walkthrough of how NoLeaves fetches a remote object name list, scans all active GameObjects, and disables matching leaves every 5 seconds."
+---
+
+NoLeaves operates entirely at runtime without any configuration files or UI. From the moment the game loads, it kicks off an automatic sequence: fetch a list of leaf object names from GitHub, then continuously scan every active GameObject in the scene and disable anything that matches. The whole process is driven by Unity coroutines and requires no input from you.
+
+## Startup sequence
+
+When the game initializes the plugin, Unity calls `Start()`. The mod does not act immediately — it waits 2 seconds first to give the game world time to fully load before doing anything.
+
+```text
+Start() → StartDelayed() [2s delay] → LoadFromURL() → DisableObjects()
+```
+
+The 2-second delay is introduced by `StartDelayed()`, which yields on `WaitForSeconds(2f)` before kicking off the network fetch. Once the object name list is loaded, `DisableObjects()` begins its continuous polling loop.
+
+## How `LoadFromURL()` fetches the object list
+
+`LoadFromURL()` uses `WebClient.DownloadString()` to fetch a plain text file from a GitHub raw URL:
+
+```text
+https://raw.githubusercontent.com/ASTRA228b/No-Leaves.ASTRA-OBJNAME/main/OBJECTNSME.txt
+```
+
+Once the response arrives, it is split on both `\n` and `\r` characters with `StringSplitOptions.RemoveEmptyEntries` to discard blank lines. Each entry is then trimmed of surrounding whitespace before being added to the `ObjNames` list.
+
+<Note>
+  If the URL fetch fails for any reason — no internet, GitHub being unreachable, or a firewall block — the mod logs `[NoLeaves]: Failed To Load URL ->` followed by the exception message and exits the coroutine with `yield break`. The game continues normally and no crash occurs.
+</Note>
+
+## How `DisableObjects()` scans and disables GameObjects
+
+After the object list is loaded, `DisableObjects()` runs in an infinite `while (true)` loop. Each iteration calls `FindObjectsByType<GameObject>(FindObjectsSortMode.None)` to get every GameObject currently in the scene, then walks the full list looking for active objects whose names exactly match an entry in `ObjNames`. Matching objects are deactivated with `SetActive(false)`. After one full pass, the coroutine waits 5 seconds before scanning again.
+
+```csharp
+private IEnumerator DisableObjects()
+{
+    var wait = new WaitForSeconds(5f);
+    while (true)
+    {
+        if (ObjNames != null && ObjNames.Count > 0)
+        {
+            GameObject[] all = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            foreach (var obj in all)
+            {
+                if (!obj.activeSelf) continue;
+
+                foreach (var n in ObjNames)
+                {
+                    if (string.IsNullOrWhiteSpace(n)) continue;
+                    if (obj.name == n)
+                    {
+                        obj.SetActive(false);
+                        break;
+                    }
+                }
+            }
+        }
+        yield return wait;
+    }
+}
+```
+
+<Info>
+  The 5-second polling loop means leaves that respawn after a map change or scene reload are caught and removed on the next pass. You do not need to restart the game or reload the mod — it handles re-removal automatically.
+</Info>
+
+<Accordion title="Why exact name matching?">
+  The comparison `obj.name == n` uses a case-sensitive exact string match against the Unity `GameObject.name` property. This is intentional: partial or fuzzy matching would risk disabling unintended objects that share part of a name. By requiring the full name to match exactly as listed in the remote text file, the mod only targets the objects the author has explicitly identified as leaf objects. If a leaf object's name changes in a game update, the remote list can be updated without changing the mod itself.
+</Accordion>

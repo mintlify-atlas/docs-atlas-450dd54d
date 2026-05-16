@@ -1,0 +1,47 @@
+---
+title: "The remote object list: what it is and how it works"
+description: "NoLeaves fetches a plain text file from GitHub containing one GameObject name per line — this is the source of truth for which objects get disabled."
+---
+
+NoLeaves does not hardcode any object names into the DLL. Instead, it downloads a plain text file from GitHub each time you launch the game. That file is the authoritative list of leaf-related GameObject names — if a name is in the file, the mod will disable any active GameObject in the scene that matches it exactly.
+
+## Where the list is hosted
+
+The object list is a raw text file stored in a public GitHub repository:
+
+```text
+https://raw.githubusercontent.com/ASTRA228b/No-Leaves.ASTRA-OBJNAME/main/OBJECTNSME.txt
+```
+
+This URL is fetched once at startup using `WebClient.DownloadString()`. The file is read directly from GitHub's raw content delivery, so updates to the list take effect the next time you launch the game — no mod update required.
+
+<Note>
+  The list is maintained by the mod author. You do not need to modify it or download it manually. Any updates to which objects are removed are handled remotely.
+</Note>
+
+## File format
+
+The file is plain text. Each line contains exactly one Unity `GameObject.name` string. Empty lines are ignored. Whitespace around each name is stripped before use.
+
+```text
+SomeLeafObject
+AnotherLeafObject
+YetAnotherLeafObject
+```
+
+<Note>
+  The example names above are illustrative. The actual object names in `OBJECTNSME.txt` are determined by the mod author based on Gorilla Tag's internal scene hierarchy and may change with game updates.
+</Note>
+
+The format is intentionally simple — no JSON, no headers, no comments. One name per line is all that's needed.
+
+## How the mod parses the file
+
+After downloading the raw text, NoLeaves processes it with the following logic:
+
+1. Split the full string on `\n` and `\r` to handle both Unix and Windows line endings.
+2. Remove empty entries using `StringSplitOptions.RemoveEmptyEntries`, so blank lines are silently skipped.
+3. Trim each remaining entry with `.Trim()` to strip any leading or trailing whitespace.
+4. Collect the cleaned names into the `ObjNames` list used by `DisableObjects()`.
+
+This means the file is forgiving of trailing newlines or mixed line endings — only non-empty, trimmed name strings end up in the list.

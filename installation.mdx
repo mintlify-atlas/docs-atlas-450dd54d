@@ -1,0 +1,68 @@
+---
+title: "Installing NoLeaves in Gorilla Tag with BepInEx"
+description: "Step-by-step instructions to install the NoLeaves BepInEx mod into Gorilla Tag on Windows via Steam. Verify BepInEx, drop in the DLL, and play."
+---
+
+Installing NoLeaves takes three steps: verify BepInEx is set up, download the DLL, and drop it into the right folder. The mod loads automatically the next time you launch Gorilla Tag.
+
+## Prerequisites
+
+Before installing NoLeaves, make sure you have:
+
+- **Gorilla Tag** installed via Steam on Windows.
+- **BepInEx 5** installed in your Gorilla Tag game directory. If you haven't installed BepInEx yet, follow the [BepInEx installation guide](https://docs.bepinex.dev/articles/user_guide/installation/index.html) before continuing.
+
+<Warning>
+  NoLeaves is a client-side mod. It is intended for use in your own local game client only. Do not deploy or distribute it as part of a server-side setup. Using client mods in contexts that violate Gorilla Tag's terms of service is your responsibility.
+</Warning>
+
+## Installation steps
+
+<Steps>
+  <Step title="Verify BepInEx is installed">
+    Navigate to your Gorilla Tag installation directory. The default Steam path is:
+
+    ```text
+    C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag\
+    ```
+
+    Confirm the following folder exists inside the game directory:
+
+    ```text
+    BepInEx/
+    ├── plugins/
+    ├── config/
+    └── LogOutput.log
+    ```
+
+    If the `BepInEx/` folder is missing, BepInEx is not installed. Complete the BepInEx setup first before continuing.
+  </Step>
+
+  <Step title="Download NoLeaves.ASTRA.dll">
+    Go to the [NoLeaves GitHub releases page](https://github.com/ASTRA228b/NoLeaves.ASTRA-V2/releases) and download the latest `NoLeaves.ASTRA.dll` file from the most recent release.
+  </Step>
+
+  <Step title="Copy the DLL into the plugins folder">
+    Copy `NoLeaves.ASTRA.dll` into the BepInEx plugins folder inside your Gorilla Tag directory:
+
+    ```text
+    BepInEx/plugins/NoLeaves.ASTRA.dll
+    ```
+
+    If your BepInEx setup uses a subfolder for mod organization, you can also place it at:
+
+    ```text
+    BepInEx/plugins/MO/NoLeaves.ASTRA.dll
+    ```
+
+    Either location works — BepInEx scans subfolders recursively.
+  </Step>
+
+  <Step title="Launch Gorilla Tag">
+    Start Gorilla Tag normally through Steam. NoLeaves will load automatically. No additional configuration is required.
+  </Step>
+</Steps>
+
+<Tip>
+  After launching, open `BepInEx/LogOutput.log` in a text editor to confirm the mod loaded. You should see a line containing `[Info   :   BepInEx] Loading [No Leaves 5.0.6]`. If that line is absent, double-check that the DLL is in the correct plugins folder and that you're running BepInEx 5.
+</Tip>
